@@ -1,0 +1,20 @@
+Latt 2 
+Conflu 1
+Ncells 10
+Medium 0
+Areai 1000 
+Adhesion 0 0
+Bilayer -6 -6
+lambA 1 1 
+lambP 1 1
+Activ 0 0
+Acttime 1000 1000
+Temperature 10
+Timesteps 2000
+Areal1 1000
+Areal2 1000
+Peril1 160 
+Peril2 160 
+Freq 10
+Biend -7 -7
+Bifreq -0.5 
