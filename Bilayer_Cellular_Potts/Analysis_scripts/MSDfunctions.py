@@ -3,7 +3,12 @@
 import numpy as ny
 import math
 import statistics
-
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import plotly.graph_objects as go
+from matplotlib.colors import TABLEAU_COLORS, same_color
+from matplotlib.pyplot import cm
+from matplotlib import cm
 
 ######################################################
 
@@ -88,25 +93,6 @@ def getCOMdata(fle,n,cnum):
                 ylay1[lines-1,terms] = float(Cdata[index2])
                 xlay2[lines-1,terms] = float(Cdata[index3])
                 ylay2[lines-1,terms] = float(Cdata[index4])
-#            lim1 = cnum+1
-#            lindx1 = 1
-#            for clay1 in range(1,lim1):
-#                cindx1 = clay1-1
-#                xlay1[lines,cindx1] = float(Cdata[lindx1])
-#                lindx1 = lindx1+1
-#                ylay1[lines,cindx1] = float(Cdata[lindx1])
-#                lindx1 = lindx1+1
-
-#            lim2 = 2*(cnum)+1
-#            lindx2 = lindx1
-#            for clay2 in range(lim1,lim2):
-#                cindx2 = clay2-lim1
-#                xlay2[lines,cindx2] = float(Cdata[lindx2])
-#                lindx2 = lindx2 + 1
-#                ylay2[lines,cindx2] = float(Cdata[lindx2])
-#                lindx2 = lindx2+1
-
-
 
 
     return time, xlay1, ylay1, xlay2, ylay2
@@ -122,10 +108,10 @@ def getallCOMdata(n,np0,nse,nbi,namep0,namesee,namebi,name,cnum):
     ylay1 = ny.zeros((n,cnum,np0,nbi,nse))
     xlay2 = ny.zeros((n,cnum,np0,nbi,nse))
     ylay2 = ny.zeros((n,cnum,np0,nbi,nse))
-    xdiffl1 = ny.zeros((n,cnum,np0,nbi,nse))
-    ydiffl1 = ny.zeros((n,cnum,np0,nbi,nse))
-    xdiffl2 = ny.zeros((n,cnum,np0,nbi,nse))
-    ydiffl2 = ny.zeros((n,cnum,np0,nbi,nse))
+    xdiffl1 = ny.zeros((n-1,cnum,np0,nbi,nse))
+    ydiffl1 = ny.zeros((n-1,cnum,np0,nbi,nse))
+    xdiffl2 = ny.zeros((n-1,cnum,np0,nbi,nse))
+    ydiffl2 = ny.zeros((n-1,cnum,np0,nbi,nse))
 
     Namu=[[[None for _ in range(nse)] for _ in range(nbi) ] for _ in range(np0)]
 
@@ -153,11 +139,11 @@ def getallCOMdata(n,np0,nse,nbi,namep0,namesee,namebi,name,cnum):
                             ylay2[lines-1,terms,p0,bi,se] = float(Cdata[index4])
                 
                             
-                    for terms2 in range(0,cnum):
-                        xdiffl1[1:,terms2,p0,bi,se] = ny.diff(xlay1[:,terms2,p0,bi,se])
-                        ydiffl1[1:,terms2,p0,bi,se] = ny.diff(ylay1[:,terms2,p0,bi,se])
-                        xdiffl2[1:,terms2,p0,bi,se] = ny.diff(xlay2[:,terms2,p0,bi,se])
-                        ydiffl2[1:,terms2,p0,bi,se] = ny.diff(ylay2[:,terms2,p0,bi,se])
+                for terms2 in range(0,cnum):
+                    xdiffl1[:,terms2,p0,bi,se] = ny.diff(xlay1[:,terms2,p0,bi,se])
+                    ydiffl1[:,terms2,p0,bi,se] = ny.diff(ylay1[:,terms2,p0,bi,se])
+                    xdiffl2[:,terms2,p0,bi,se] = ny.diff(xlay2[:,terms2,p0,bi,se])
+                    ydiffl2[:,terms2,p0,bi,se] = ny.diff(ylay2[:,terms2,p0,bi,se])
 
 
 
@@ -218,6 +204,8 @@ def getallshapedata(n,cnum,np0,nse,nbi,namep0,namesee,namebi,name):
 
                 filenme = namep0[p0] + namesee[se] + "Bi_" + namebi[bi] + name
 
+                Pcells = []
+                p0cells = []
                 with open(filenme,'r') as Cfile:
                     Clines = Cfile.readlines()
                     for lines in range(1,n+1):
@@ -231,16 +219,18 @@ def getallshapedata(n,cnum,np0,nse,nbi,namep0,namesee,namebi,name):
                             p0lay1[lines-1,terms,p0,bi,se] = float(Cdata[index2])
                             Play2[lines-1,terms,p0,bi,se] = float(Cdata[index3])
                             p0lay2[lines-1,terms,p0,bi,se] = float(Cdata[index4])
-   
-            Play12[p0,bi,se] = ( ny.mean(Play1[-1,:,p0,bi,se]) + ny.mean(Play2[-1,:,p0,bi,se]) )/2
-            p0lay12[p0,bi,se] = ( ny.mean(p0lay1[-1,:,p0,bi,se]) + ny.mean(p0lay2[-1,:,p0,bi,se]) )/2
+                      
 
 
-    Pavg[p0,bi] = ny.mean(Play12[p0,bi,:])
-    p0avg[p0,bi] = ny.mean(p0lay12[p0,bi,:])
+                Play12[p0,bi,se] = ( ny.mean(Play1[-1,:,p0,bi,se]) + ny.mean(Play2[-1,:,p0,bi,se]) )/2
+                p0lay12[p0,bi,se] = ( ny.mean(p0lay1[-1,:,p0,bi,se]) + ny.mean(p0lay2[-1,:,p0,bi,se]) )/2
 
-    Pstd[p0,bi] = ny.std(Play12[p0,bi,:])
-    p0std[p0,bi] = ny.std(p0lay12[p0,bi,:])
+
+            Pavg[p0,bi] = ny.mean(Play12[p0,bi,:])
+            p0avg[p0,bi] = ny.mean(p0lay12[p0,bi,:])
+
+            Pstd[p0,bi] = ny.std(Play12[p0,bi,:])
+            p0std[p0,bi] = ny.std(p0lay12[p0,bi,:])
 
 
     return Play1, p0lay1, Play2, p0lay2, Pavg, Pstd, p0avg, p0std
@@ -259,7 +249,8 @@ def avgovercellsnospike(dat,dif,xmin, xmax, nli,ncells):
 
     ckeep = 0
     for cells in range(0,ncells):
-        if ny.max(dif) < L/4 and ny.min(dif) > -L/4:
+        Dif = dif[:,cells]
+        if ny.max(Dif) < L/4 and ny.min(Dif) > -L/4:
             xavg+= dat[:,cells]
             ckeep +=1
 
@@ -267,7 +258,8 @@ def avgovercellsnospike(dat,dif,xmin, xmax, nli,ncells):
         xavg = xavg/float(ckeep)
 
     if ckeep == 0:
-        print("No reasonable cells found")
+        print("No reasonable cells found without spikes")
+        xavg[:] = ny.nan
 
     return xavg
 
@@ -292,10 +284,34 @@ def avgovernonzeroarray(dat,nli,nsed):
         avgary = avgary/float(num)
 
     if num == 0:
-        print("None of the seeds were good")
+        print("None of the seeds had values")
 
 
     return avgary
+
+#########################################################
+def avgoverexistingarray(dat,nli,nsed):
+
+
+    avgary = ny.zeros(nli)
+
+
+    num = 0
+
+    for seeds in range(0,nsed):
+            avgary += dat[:,seeds]
+            num+=1
+
+    if num != 0:
+        avgary = avgary/float(num)
+
+    if num == 0:
+        print("There were no usable seeds")
+
+
+    return avgary
+
+
 
 #########################################################
 #Here we do the intercept and the slope for linear regression
@@ -334,6 +350,63 @@ def getregline(X, B0, B1, n1, n2):
     return Yreg
 
 ###########################################################
+#Here we get the final distance for seeds
+
+def getdistavgoverseeds(dat2,nli,nsed):
+
+
+    distlist = []
+
+    num = 0
+
+ #   check2 = ny.zeros(nli)
+
+    if nsed > 0:
+        for seeds in range(0,nsed):
+            check2 = ny.array(dat2[:,seeds])
+            distlist.append(check2[-1])
+
+            num+=1
+
+    if num == 0:
+        print("None of the seeds were good")
+
+
+    return distlist
+
+
+
+#############################################################
+#We get diffusion coefficients for each seed
+def getdiffcoefseed(time,dat1,nli,nsed,n1,n2):
+
+
+    difflist = []
+
+    num = 0
+
+    check1 = ny.zeros(nli)
+
+    for seeds in range(0,nsed):
+        if len(dat1[seeds] > 0):
+            check1 = ny.array(dat1[seeds])
+            B0,B1 = linreg_coeff(time, check1, n1, n2)
+            D0 = B1/4
+            difflist.append(D0)
+            num+=1
+
+
+    if num == 0:
+        print("None of the seeds were good")
+
+
+    return difflist
+
+
+
+
+##############################################################
+
 #Here we get diffusion coefficients and the final distance for seeds
 
 def getdiffcoefandist(time,dat1,dat2,nli,nsed,n1,n2):
@@ -350,13 +423,14 @@ def getdiffcoefandist(time,dat1,dat2,nli,nsed,n1,n2):
     for seeds in range(0,nsed):
         if len(dat1[seeds] > 0):
             check1 = ny.array(dat1[seeds])
-            check2 = ny.array(dat2[seeds])
             B0,B1 = linreg_coeff(time, check1, n1, n2)
             D0 = B1/2
             difflist.append(D0)
+            num+=1
+        if len(dat2[seeds] > 0):
+            check2 = ny.array(dat2[seeds])
             distlist.append(check2[-1])
 
-            num+=1
 
     if num == 0:
         print("None of the seeds were good")
@@ -367,7 +441,125 @@ def getdiffcoefandist(time,dat1,dat2,nli,nsed,n1,n2):
 
 
 ###########################################################
+##############################################################
+#We get the average msd and dist over seeds that don't jump
 
+def getalldistnospikeinfo(comdat,n,ncells,xmin, xmax,ymin,ymax,np0,nse,nbi):
+
+    distkeepx=[[ None for _ in range(nbi) ] for _ in range(np0)]
+    distkeepy=[[ None for _ in range(nbi) ] for _ in range(np0)]
+    distkeepr=[[ None for _ in range(nbi) ] for _ in range(np0)]
+    Distr = ny.zeros((np0,nbi))
+    Distrstd = ny.zeros((np0,nbi))
+
+    Lx = xmax-xmin
+    Ly = ymax-ymin
+
+    ckeep = 0
+
+    xdistl1seed = ny.zeros((n,np0,nbi,nse))
+    ydistl1seed = ny.zeros((n,np0,nbi,nse))
+    xdistl2seed = ny.zeros((n,np0,nbi,nse))
+    ydistl2seed = ny.zeros((n,np0,nbi,nse))
+
+    rdistseed = ny.zeros((n,np0,nbi,nse))
+
+    xdistl12seed = ny.zeros((n,np0,nbi,nse))
+    ydistl12seed = ny.zeros((n,np0,nbi,nse))
+
+
+    xdist1seedtemp = ny.zeros((n,nse))
+    ydist1seedtemp = ny.zeros((n,nse))
+
+    xdistl1 = ny.zeros((n,np0,nbi))
+    ydistl1 = ny.zeros((n,np0,nbi))
+    xdistl2 = ny.zeros((n,np0,nbi))
+    ydistl2 = ny.zeros((n,np0,nbi))
+    xdistl12 = ny.zeros((n,np0,nbi))
+    ydistl12 = ny.zeros((n,np0,nbi))
+    rdist = ny.zeros((n,np0,nbi))
+
+
+    for p0 in ny.arange(0,np0):
+        for bi in ny.arange(0,nbi):
+
+
+            xmsdtemp = []
+            ymsdtemp = []
+
+            xdisttemp = []
+            ydisttemp = []
+            rdisttemp = []
+
+            for se in ny.arange(0,nse):
+               
+                xdistl1seed[:,p0,bi,se] = avgovercellsnospike(comdat.xdist1[:,:,p0,bi,se],comdat.delxl1[:,:,p0,bi,se],xmin,xmax,n,ncells)
+
+                ydistl1seed[:,p0,bi,se] = avgovercellsnospike(comdat.ydist1[:,:,p0,bi,se],comdat.delyl1[:,:,p0,bi,se],ymin,ymax,n,ncells)
+ 
+                xdistl2seed[:,p0,bi,se] = avgovercellsnospike(comdat.xdist2[:,:,p0,bi,se],comdat.delxl2[:,:,p0,bi,se],xmin,xmax,n,ncells)
+
+                ydistl2seed[:,p0,bi,se] = avgovercellsnospike(comdat.ydist2[:,:,p0,bi,se],comdat.delyl2[:,:,p0,bi,se],ymin,ymax,n,ncells)
+
+
+                rdistseed[:,p0,bi,se] = xdistl1seed[:,p0,bi,se]**2 + ydistl1seed[:,p0,bi,se]**2 + xdistl2seed[:,p0,bi,se]**2 + ydistl2seed[:,p0,bi,se]**2
+                rdistseed[:,p0,bi,se] = ny.sqrt(rdistseed[:,p0,bi,se]/4)
+
+
+#                rdisttemp.append(rdistseed[:,p0,bi,se])
+
+#                xdistl12seed[:,p0,bi,se] = (xdistl1seed[:,p0,bi,se]+xdistl2seed[:,p0,bi,se])/2
+
+#                ydistl12seed[:,p0,bi,se] = (ydistl1seed[:,p0,bi,se]+ydistl2seed[:,p0,bi,se])/2
+                
+                if not ny.isnan(xdistl1seed[:,p0,bi,se]).any():
+                    xdisttemp.append(xdistl1seed[:,p0,bi,se])
+                if not ny.isnan(xdistl2seed[:,p0,bi,se]).any():
+                    xdisttemp.append(xdistl2seed[:,p0,bi,se])
+                if not ny.isnan(ydistl1seed[:,p0,bi,se]).any():
+                    ydisttemp.append(ydistl1seed[:,p0,bi,se])
+                if not ny.isnan(ydistl2seed[:,p0,bi,se]).any():
+                    ydisttemp.append(ydistl2seed[:,p0,bi,se])
+
+
+            distkeepx[p0][bi] = getdistavgoverseeds(xdisttemp,n,len(xdisttemp))
+
+            distkeepy[p0][bi] = getdistavgoverseeds(ydisttemp,n,len(ydisttemp))
+
+            distkeepr[p0][bi] = getdistavgoverseeds(rdisttemp,n,nse)
+
+            distrlist = ny.array(distkeepr[p0][bi]) 
+            Distr[p0,bi] = ny.mean(distrlist) 
+#            diststd = ny.std(distrlist)
+            Distrstd[p0,bi] = ny.std(distrlist)
+
+
+
+#            for se in ny.arange(0,nse):
+#                xdist1seedtemp[:,se] = 
+
+            xdistl1[:,p0,bi] = avgoverexistingarray(xdistl1seed[:,p0,bi,:],n,nse)
+            ydistl1[:,p0,bi] = avgoverexistingarray(ydistl1seed[:,p0,bi,:],n,nse)
+            xdistl2[:,p0,bi] = avgoverexistingarray(xdistl2seed[:,p0,bi,:],n,nse)
+            ydistl2[:,p0,bi] = avgoverexistingarray(ydistl2seed[:,p0,bi,:],n,nse)
+
+
+
+            xdistl12[:,p0,bi] = (xdistl1[:,p0,bi]+xdistl2[:,p0,bi])/2
+
+            ydistl12[:,p0,bi] = (ydistl1[:,p0,bi]+ydistl2[:,p0,bi])/2
+
+
+
+            rdist[:,p0,bi] = ny.sqrt((xdistl12[:,p0,bi])**2 + (ydistl12[:,p0,bi] )**2 ) 
+
+
+
+    return xdistl12seed, ydistl12seed, xdistl12,ydistl12,rdist,Distr,Distrstd
+
+#
+
+#############################################################
 #We get the average msd and dist over seeds that don't jump
 
 def getallmsdanddist(comdat,n,ncells,xmin, xmax,ymin,ymax,np0,nse,nbi,starttime,endtime):
@@ -375,8 +567,10 @@ def getallmsdanddist(comdat,n,ncells,xmin, xmax,ymin,ymax,np0,nse,nbi,starttime,
 
     diffkeepx=[[ None for _ in range(nbi) ] for _ in range(np0)]
     diffkeepy=[[ None for _ in range(nbi) ] for _ in range(np0)]
+    diffkeepr=[[ None for _ in range(nbi) ] for _ in range(np0)]
     distkeepx=[[ None for _ in range(nbi) ] for _ in range(np0)]
     distkeepy=[[ None for _ in range(nbi) ] for _ in range(np0)]
+    distkeepr=[[ None for _ in range(nbi) ] for _ in range(np0)]
 
     Diffr = ny.zeros((np0,nbi))
     Diffrstd = ny.zeros((np0,nbi))
@@ -397,6 +591,7 @@ def getallmsdanddist(comdat,n,ncells,xmin, xmax,ymin,ymax,np0,nse,nbi,starttime,
     xmsdl12seed = ny.zeros((n,np0,nbi,nse))
     ymsdl12seed = ny.zeros((n,np0,nbi,nse))
 
+    rmsdseed = ny.zeros((n,np0,nbi,nse))
 
     xdistl1seed = ny.zeros((n,np0,nbi,nse))
     ydistl1seed = ny.zeros((n,np0,nbi,nse))
@@ -406,6 +601,7 @@ def getallmsdanddist(comdat,n,ncells,xmin, xmax,ymin,ymax,np0,nse,nbi,starttime,
     xdistl12seed = ny.zeros((n,np0,nbi,nse))
     ydistl12seed = ny.zeros((n,np0,nbi,nse))
 
+    rdistseed = ny.zeros((n,np0,nbi,nse))
 
     xmsdl1 = ny.zeros((n,np0,nbi))
     ymsdl1 = ny.zeros((n,np0,nbi))
@@ -426,18 +622,21 @@ def getallmsdanddist(comdat,n,ncells,xmin, xmax,ymin,ymax,np0,nse,nbi,starttime,
     ydistl12 = ny.zeros((n,np0,nbi))
     rdist = ny.zeros((n,np0,nbi))
 
-
+    time = ny.zeros((n,np0,nbi))
 
 
     for p0 in ny.arange(0,np0):
         for bi in ny.arange(0,nbi):
 
-
             xmsdtemp = []
             ymsdtemp = []
 
+            rmsdtemp = []
+
             xdisttemp = []
             ydisttemp = []
+
+            time[:,p0,bi] = comdat.timedat[:,p0,bi,0]
 
             for se in ny.arange(0,nse):
 
@@ -460,58 +659,64 @@ def getallmsdanddist(comdat,n,ncells,xmin, xmax,ymin,ymax,np0,nse,nbi,starttime,
                 ydistl2seed[:,p0,bi,se] = avgovercellsnospike(comdat.ydist2[:,:,p0,bi,se],comdat.delyl2[:,:,p0,bi,se],ymin,ymax,n,ncells)
 
 
-                xmsdl12seed[:,p0,bi,se] = (xmsdl1seed[:,p0,bi,se]+xmsdl2seed[:,p0,bi,se])/2
-
-                ymsdl12seed[:,p0,bi,se] = (ymsdl1seed[:,p0,bi,se]+ymsdl2seed[:,p0,bi,se])/2
-
-                xdistl12seed[:,p0,bi,se] = (xdistl1seed[:,p0,bi,se]+xdistl2seed[:,p0,bi,se])/2
-
-                ydistl12seed[:,p0,bi,se] = (ydistl1seed[:,p0,bi,se]+ydistl2seed[:,p0,bi,se])/2
-                
-                xmsdtemp.append(xmsdl1seed[:,p0,bi,se])
-                xmsdtemp.append(xmsdl2seed[:,p0,bi,se])
-
-                ymsdtemp.append(ymsdl1seed[:,p0,bi,se])
-                ymsdtemp.append(ymsdl2seed[:,p0,bi,se])
-
-                xdisttemp.append(xdistl1seed[:,p0,bi,se])
-                xdisttemp.append(xdistl2seed[:,p0,bi,se])
-                ydisttemp.append(ydistl1seed[:,p0,bi,se])
-                ydisttemp.append(ydistl2seed[:,p0,bi,se])
+                rmsdseed[:,p0,bi,se] = (xmsdl1seed[:,p0,bi,se]+xmsdl2seed[:,p0,bi,se])/2 + (ymsdl1seed[:,p0,bi,se]+ymsdl2seed[:,p0,bi,se])/2 
 
 
+                rdistseed[:,p0,bi,se] = xdistl1seed[:,p0,bi,se]**2 + ydistl1seed[:,p0,bi,se]**2 + xdistl2seed[:,p0,bi,se]**2 + ydistl2seed[:,p0,bi,se]**2
+                rdistseed[:,p0,bi,se] = ny.sqrt(rdistseed[:,p0,bi,se]/4)
+
+                rmsdtemp.append(rmsdseed[:,p0,bi,se])
 
 
-            diffkeepx[p0][bi], distkeepx[p0][bi] = getdiffcoefandist(comdat.timedat[:,p0,bi,se],xmsdtemp,xdisttemp,n,nse,starttime,endtime)
+#                xmsdl12seed[:,p0,bi,se] = (xmsdl1seed[:,p0,bi,se]+xmsdl2seed[:,p0,bi,se])/2
+#                ymsdl12seed[:,p0,bi,se] = (ymsdl1seed[:,p0,bi,se]+ymsdl2seed[:,p0,bi,se])/2
+#                xdistl12seed[:,p0,bi,se] = (xdistl1seed[:,p0,bi,se]+xdistl2seed[:,p0,bi,se])/2
+#                ydistl12seed[:,p0,bi,se] = (ydistl1seed[:,p0,bi,se]+ydistl2seed[:,p0,bi,se])/2
+  
+                if not ny.isnan(xmsdl1seed[:,p0,bi,se]).any():
+                    xmsdtemp.append(xmsdl1seed[:,p0,bi,se])
+                if not ny.isnan(xmsdl2seed[:,p0,bi,se]).any():
+                    xmsdtemp.append(xmsdl2seed[:,p0,bi,se])
+                if not ny.isnan(ymsdl1seed[:,p0,bi,se]).any():
+                    ymsdtemp.append(ymsdl1seed[:,p0,bi,se])
+                if not ny.isnan(ymsdl2seed[:,p0,bi,se]).any():
+                    ymsdtemp.append(ymsdl2seed[:,p0,bi,se])
+                if not ny.isnan(xdistl1seed[:,p0,bi,se]).any():
+                    xdisttemp.append(xdistl1seed[:,p0,bi,se])
+                if not ny.isnan(xdistl2seed[:,p0,bi,se]).any():
+                    xdisttemp.append(xdistl2seed[:,p0,bi,se])
+                if not ny.isnan(ydistl1seed[:,p0,bi,se]).any():
+                    ydisttemp.append(ydistl1seed[:,p0,bi,se])
+                if not ny.isnan(xdistl1seed[:,p0,bi,se]).any():
+                    ydisttemp.append(ydistl2seed[:,p0,bi,se])
 
-            diffkeepy[p0][bi], distkeepy[p0][bi] = getdiffcoefandist(comdat.timedat[:,p0,bi,se],ymsdtemp,ydisttemp,n,nse,starttime,endtime)
+
+#            diffkeepx[p0][bi], distkeepx[p0][bi] = getdiffcoefandist(comdat.timedat[:,p0,bi,se],xmsdtemp,xdisttemp,n,len(xmsdtemp),starttime,endtime)
+
+#            diffkeepy[p0][bi], distkeepy[p0][bi] = getdiffcoefandist(comdat.timedat[:,p0,bi,se],ymsdtemp,ydisttemp,n,len(xmsdtemp),starttime,endtime)
 
 
-            diff = []
-            diff += diffkeepx[p0][bi]
-            diff += diffkeepy[p0][bi]
-            difF = ny.array(diff)
-            Diffr[p0,bi] = ny.mean(difF)
-            Diffrstd[p0,bi] = ny.std(difF)
+            diffkeepr[p0][bi] = getdiffcoefseed(comdat.timedat[:,p0,bi,se],rmsdtemp,n,nse,starttime,endtime)
 
-            Distkeepx=ny.array(distkeepx[p0][bi])
-            Distkeepy=ny.array(distkeepy[p0][bi])
-            distkeepxstd = ny.var(Distkeepx**2)
-            distkeepystd = ny.var(Distkeepy**2)
-            Distr[p0,bi] = ny.sqrt(ny.mean(Distkeepx**2)+ny.mean(Distkeepy**2))
-            diststd = ny.sqrt(distkeepxstd + distkeepystd)
-            Distrstd[p0,bi] = diststd/(2*ny.sqrt(Distr[p0,bi]))
+            distkeepr[p0][bi] = getdistavgoverseeds(rdistseed,n,nse)
 
 
-            xmsdl1[:,p0,bi] = avgovernonzeroarray(xmsdl1seed[:,p0,bi,:],n,nse)
-            ymsdl1[:,p0,bi] = avgovernonzeroarray(ymsdl1seed[:,p0,bi,:],n,nse)
-            xmsdl2[:,p0,bi] = avgovernonzeroarray(xmsdl2seed[:,p0,bi,:],n,nse)
-            ymsdl2[:,p0,bi] = avgovernonzeroarray(ymsdl2seed[:,p0,bi,:],n,nse)
+            Diffr[p0,bi] = ny.mean(ny.array(diffkeepr[p0][bi]))/4
+            Diffrstd[p0,bi] = ny.std(ny.array(diffkeepr[p0][bi]))
 
-            xdistl1[:,p0,bi] = avgovernonzeroarray(xdistl1seed[:,p0,bi,:],n,nse)
-            ydistl1[:,p0,bi] = avgovernonzeroarray(ydistl1seed[:,p0,bi,:],n,nse)
-            xdistl2[:,p0,bi] = avgovernonzeroarray(xdistl2seed[:,p0,bi,:],n,nse)
-            ydistl2[:,p0,bi] = avgovernonzeroarray(ydistl2seed[:,p0,bi,:],n,nse)
+            Distr[p0,bi] = ny.mean(ny.array(distkeepr[p0][bi]))
+            Distrstd[p0,bi] = ny.std(ny.array(distkeepr[p0][bi]))
+
+
+            xmsdl1[:,p0,bi] = avgoverexistingarray(xmsdl1seed[:,p0,bi,:],n,nse)
+            ymsdl1[:,p0,bi] = avgoverexistingarray(ymsdl1seed[:,p0,bi,:],n,nse)
+            xmsdl2[:,p0,bi] = avgoverexistingarray(xmsdl2seed[:,p0,bi,:],n,nse)
+            ymsdl2[:,p0,bi] = avgoverexistingarray(ymsdl2seed[:,p0,bi,:],n,nse)
+
+            xdistl1[:,p0,bi] = avgoverexistingarray(xdistl1seed[:,p0,bi,:],n,nse)
+            ydistl1[:,p0,bi] = avgoverexistingarray(ydistl1seed[:,p0,bi,:],n,nse)
+            xdistl2[:,p0,bi] = avgoverexistingarray(xdistl2seed[:,p0,bi,:],n,nse)
+            ydistl2[:,p0,bi] = avgoverexistingarray(ydistl2seed[:,p0,bi,:],n,nse)
 
 
             xmsdl12[:,p0,bi] = (xmsdl1[:,p0,bi]+xmsdl2[:,p0,bi])/2
@@ -529,9 +734,340 @@ def getallmsdanddist(comdat,n,ncells,xmin, xmax,ymin,ymax,np0,nse,nbi,starttime,
 
 
 
-    return xmsdl12seed, ymsdl12seed, xdistl12seed, ydistl12seed, xmsdl12, ymsdl12,rmsd,xdistl12,ydistl12,rdist,Diffr,Diffrstd,Distr,Distrstd
+    return time, xmsdl12seed, ymsdl12seed, xdistl12seed, ydistl12seed, xmsdl12, ymsdl12,rmsd,xdistl12,ydistl12,rdist,Diffr,Diffrstd,Distr,Distrstd
 
 ##################################################################
+#We get the distance traveled at rise time
+
+def getalldistatrise(Dis,rtim,np0,nbi,nse):
+
+    rdistatriseseed = ny.zeros((np0,nbi,nse))
+
+    rdistatrise = ny.zeros((np0,nbi))
+    rdistatrisestd = ny.zeros((np0,nbi))
+
+    speatriseseed = ny.zeros((np0,nbi,nse))
+    speatrise = ny.zeros((np0,nbi))
+    speatrisestd = ny.zeros((np0,nbi))
+
+
+    for p0 in range(0,np0):
+        for bi in range(0,nbi):
+            for se in range(0,nse):
+                rtime = rtim.edgerise[p0,bi,se]
+                rdistatriseseed[p0,bi,se] = Dis.rdistseed[rtime,p0,bi,se]
+                if rtime >0:
+                    speatriseseed[p0,bi,se] = Dis.rdistseed[rtime,p0,bi,se]/float(rtime)
+                else:
+                    speatriseseed[p0,bi,se] = Dis.rdistseed[-1,p0,bi,se]/float(Dis.time[-1,p0,bi,se])
+
+
+            rdistatrise[p0,bi] = ny.mean(rdistatriseseed[p0,bi,:])
+            rdistatrisestd[p0,bi] = ny.mean(rdistatriseseed[p0,bi,:])
+            speatrise[p0,bi] = ny.mean(speatriseseed[p0,bi,:])
+            speatrisestd[p0,bi] = ny.std(speatriseseed[p0,bi,:])
+
+
+
+
+    return rdistatriseseed,speatriseseed,rdistatrise,speatrise,rdistatrisestd,speatrisestd
+
+
+
+
+#################################################################
+
+#We plot COM curves
+
+def plotCOM(COM,ncell,P,B,S,floo,titl,xy):
+    
+    cmap = plt.get_cmap('rainbow',ncell)
+
+    plt.figure(floo)
+    plt.grid()
+    plt.title(titl)
+
+    if xy == 0:
+
+        for cell in range(0,ncell):
+            plt.plot(COM.timedat[:,P,B,S],COM.xrawl1[:,cell,P,B,S], color = cmap(cell), label = cell )
+            plt.plot(COM.timedat[:,P,B,S],COM.xrawl2[:,cell,P,B,S], color = cmap(cell+ncell), label = cell )
+
+    else:
+        for cell in range(0,ncell):
+            plt.plot(COM.timedat[:,P,B,S],COM.yrawl1[:,cell,P,B,S], color = cmap(cell), label = cell )
+            plt.plot(COM.timedat[:,P,B,S],COM.yrawl2[:,cell,P,B,S], color = cmap(cell+ncell), label = cell )
+
+
+    plt.tick_params(axis='both', labelsize=28)
+    plt.legend(loc='upper left')
+
+    floo+= 1
+
+
+    return floo
+
+
+################################################################
+#We plot distance curves for the x direction
+
+def plotdist(COM,ncell,P,B,S,floo,titl,xy):
+ 
+    cmap = plt.get_cmap('rainbow',ncell)
+
+    plt.figure(floo)
+    plt.grid()
+    plt.title(titl)
+
+    if xy == 0:
+
+        for cell in range(0,ncell):
+            plt.plot(COM.timedat[:,P,B,S],COM.xdist1[:,cell,P,B,S], color = cmap(cell), label = cell )
+            plt.plot(COM.timedat[:,P,B,S],COM.xdist2[:,cell,P,B,S], color = cmap(cell), label = cell )
+
+    else:
+        for cell in range(0,ncell):
+            plt.plot(COM.timedat[:,P,B,S],COM.ydist1[:,cell,P,B,S], color = cmap(cell), label = cell )
+            plt.plot(COM.timedat[:,P,B,S],COM.ydist2[:,cell,P,B,S], color = cmap(cell), label = cell )
+
+
+    plt.tick_params(axis='both', labelsize=28)
+    plt.legend(loc='lower left')
+
+    floo += 1
+    return floo
+
+#################################################################
+#We plot seed averaged walking distance
+
+def plotdistseed(COM,P,B,Sran,floo,titl,slabel,xy):
+ 
+    cmap = plt.get_cmap('rainbow',Pran)
+
+    plt.figure(floo)
+    plt.grid()
+    plt.title(titl)
+
+
+    if xy == 0:
+
+        for seed in range(0,Sran):
+            plt.plot(COM.time[:,P,B,seed],COM.xdistseed[:,P,B,seed], color = cmap(seed), label = slabel[seed] )
+
+
+    else:
+        for seed in range(0,Sran):
+            plt.plot(COM.time[:,P,B,seed],COM.ydistseed[:,P,B,seed], color = cmap(seed), label = slabel[seed] )
+
+
+
+    plt.tick_params(axis='both', labelsize=28)
+    plt.legend(loc='lower left')
+
+    floo += 1
+    return floo
+
+
+
+
+################################################################
+#We plot ensemble averaged walking distance
+
+def plotenavgdist(COM,Pran,B,floo,titl,plabel,xy):
+ 
+    cmap = plt.get_cmap('rainbow',Pran)
+
+    plt.figure(floo)
+    plt.grid()
+    plt.title(titl)
+
+
+    if xy == 0:
+
+        for p0 in range(0,Pran):
+            plt.plot(COM.time[:,p0,B],COM.xdist[:,p0,B], color = cmap(p0), label = plabel[p0] )
+
+
+    else:
+        for p0 in range(0,Pran):
+            plt.plot(COM.time[:,p0,B],COM.ydist[:,p0,B], color = cmap(p0), label = plabel[p0] )
+
+
+
+    plt.tick_params(axis='both', labelsize=28)
+    plt.legend(loc='lower left')
+
+    floo += 1
+    return floo
+
+###############################################################
+#We plot msd
+
+def plotenavgmsd(COM,Pran,B,floo,titl,plabel,xy):
+ 
+    cmap = plt.get_cmap('rainbow',Pran)
+
+    plt.figure(floo)
+    plt.grid()
+    plt.title(titl)
+
+
+    if xy == 0:
+
+        for p0 in range(0,Pran):
+            plt.plot(COM.time[:,p0,B],COM.xmsd[:,p0,B], color = cmap(p0), label = plabel[p0] )
+
+
+    else:
+        for p0 in range(0,Pran):
+            plt.plot(COM.time[:,p0,B],COM.ymsd[:,p0,B], color = cmap(p0), label = plabel[p0] )
+
+
+    plt.tick_params(axis='both', labelsize=28)
+    plt.legend(loc='lower left')
+
+    floo += 1
+    return floo
+
+############################################################
+
+
+
+###########################################################
+
+def plotrdistseeds(COM,P,B,Sran,floo,titl,slabel):
+
+    cmap = plt.get_cmap('rainbow',Pran)
+
+    plt.figure(floo)
+    plt.grid()
+    plt.title(titl)
+
+    for seed in range(0,Sran):
+        plt.plot(COM.time[:,P,B,seed],COM.rdistseed[:,P,B,seed], color = cmap(seed), label = slabel[p0] )
+#        plt.axvline(x=etime*10, color='k', linestyle='--')
+
+
+    plt.tick_params(axis='both', labelsize=28)
+    plt.legend(loc='lower left')
+
+    floo += 1
+    return floo
+
+
+
+#############################################################
+
+def plotdistr(COM,Pran,B,floo,titl,plabel):
+
+    cmap = plt.get_cmap('rainbow',Pran)
+
+    plt.figure(floo)
+    plt.grid()
+    plt.title(titl)
+
+    for p0 in range(0,Pran):
+        plt.plot(COM.time[:,p0,B],COM.rdist[:,p0,B], color = cmap(p0), label = plabel[p0] )
+#        plt.axvline(x=etime*10, color='k', linestyle='--')
+
+
+    plt.tick_params(axis='both', labelsize=28)
+    plt.legend(loc='lower left')
+
+    floo += 1
+    return floo
+
+
+############################################################
+#We plot msdR
+
+def plotmsdr(COM,Pran,B,floo,titl,plabel,etime):
+ 
+    cmap = plt.get_cmap('rainbow',Pran)
+
+    plt.figure(floo)
+    plt.grid()
+    plt.title(titl)
+
+
+    for p0 in range(0,Pran):
+        plt.plot(COM.time[:,p0,B],COM.rmsd[:,p0,B], color = cmap(p0), label = plabel[p0] )
+        plt.axvline(x=etime*10, color='k', linestyle='--')
+
+
+    plt.tick_params(axis='both', labelsize=28)
+    plt.legend(loc='lower left')
+
+    floo += 1
+    return floo
+
+
+
+################################################################
+
+#We plot the shape index and diffusion coefficient
+
+def plotshapeanddiffcoeff(Shape,Diffc,pvalues,Bfix, floop):
+
+
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+
+    color1 = 'tab:blue'
+    ax1.scatter(pvalues,Shape.p0avg[:,Bfix], color = color1, s=50)
+    ax1.plot(pvalues,Shape.p0avg[:,Bfix], color = color1)
+    ax1.errorbar(pvalues,Shape.p0avg[:,Bfix], yerr=Shape.p0std[:,0], capsize=3, fmt = 'o', color = color1)
+    ax1.tick_params(axis='both', labelsize = 28)
+    ax1.grid(True, which='both', axis='both', linestyle='-', linewidth=0.5)
+
+
+    color2 = 'tab:red'
+    ax2.scatter(pvalues,Diffc.diffcoeffavg[:,Bfix], color=color2, s=50)
+    ax2.plot(pvalues,Diffc.diffcoeffavg[:,Bfix], color=color2)
+    ax2.errorbar(pvalues,Diffc.diffcoeffavg[:,Bfix], yerr=Diffc.diffcoeffstd[:,0], capsize=3, fmt = 's', color=color2)
+    ax2.tick_params(axis='both', labelsize = 28)
+    ax2.grid(True, which='both', axis='both', linestyle='-', linewidth=0.5)
+
+    fig.tight_layout()
+
+
+    floop +=1
+    return floop
+
+
+##################################################################
+#We plot neighbor changes and dist traveled
+
+def plotneighanddistfin(Nei,Dist,pvalues,Bfix, floop):
+
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+
+    color1 = 'tab:blue'
+    ax1.scatter(pvalues,Nei.neichgavg[:,Bfix], color = color1, s=50)
+    ax1.plot(pvalues,Nei.neichgavg[:,Bfix], color = color1)
+    ax1.errorbar(pvalues,Nei.neichgavg[:,Bfix], yerr=Nei.neichgstd[:,0], capsize=3, fmt = 'o', color = color1)
+    ax1.tick_params(axis='both', labelsize = 28)
+    ax1.grid(True, which='both', axis='both', linestyle='-', linewidth=0.5)
+
+
+    color2 = 'tab:red'
+    ax2.scatter(pvalues,Dist.findistavg[:,Bfix], color=color2, s=50)
+    ax2.plot(pvalues,Dist.findistavg[:,Bfix], color=color2)
+    ax2.errorbar(pvalues,Dist.findistavg[:,Bfix], yerr=Dist.findiststd[:,Bfix], capsize=3, fmt = 's', color=color2)
+    ax2.tick_params(axis='both', labelsize = 28)
+    ax2.grid(True, which='both', axis='both', linestyle='-', linewidth=0.5)
+
+    fig.tight_layout()
+
+
+    floop +=1
+    return floop
+
+
+
+
+###################################################################
 
 #We need to smooth the data to account for periodic boundary conditions
 

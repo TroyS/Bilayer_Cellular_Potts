@@ -15,18 +15,20 @@ class Edgematchdat:
 
 
 class Edgedatavg:
-    def _init_(self, tdat, edat):
+    def _init_(self, tdat, edat, edstd):
         self.tsdat = np.array(tdat)
         self.edge = np.array(edat)
+        self.edgestd = np.array(edstd)
 
 
 class Neighdata:
-    def _init_(self,tim,nei1,nei2,nei12,neisum,neised,neiboth,neibothstd):
+    def _init_(self,tim,nei1,nei2,nei12,neisum,neisumtot,neised,neiboth,neibothstd):
         self.time = tim
         self.neichg1 = nei1
         self.neichg2 = nei2
         self.neichg12 = nei12
-        self.neichgtot = neisum
+        self.neichgtotseed = neisum
+        self.neichgtot = neisumtot
         self.neichgsum = neised
         self.neichgavg = neiboth
         self.neichgstd = neibothstd
@@ -71,7 +73,8 @@ class trajdata:
 
 
 class MSDanddistavg:
-    def _init_(self, Xmsdsee, Ymsdsee, Rmsdsee, Xdistsee, Ydistsee, Rdistsee,Xmsd, Ymsd, Rmsd, Xdist, Ydist, Rdist):
+    def _init_(self, tim,Xmsdsee, Ymsdsee, Rmsdsee, Xdistsee, Ydistsee, Rdistsee,Xmsd, Ymsd, Rmsd, Xdist, Ydist, Rdist, Rrisedist):
+        self.time = tim
         self.xmsdseed = Xmsdsee
         self.ymsdseed = Ymsdsee
         self.rmsdseed = Rmsdsee
@@ -94,7 +97,23 @@ class Datapoints:
         self.findist = dis
         self.findistavg = disavg
         self.findiststd = disstd
+    
 
+class Speeddata:
+    def _init_(self, spe,speavg,nam):
+        self.speed = spe
+        self.speedavg = speavg
+        self.name = nam
+
+
+class Propsatrise:
+    def _init_(self, ratrisseed,ratris, ratrisstd, satrisseed,satris,satrisstd):
+        self.distatriseseed = ratrisseed
+        self.distatrise = ratris
+        self.distatrisestd = ratrisstd
+        self.speedatriseseed = satrisseed
+        self.speedatrise = satris
+        self.speedatrisestd = satrisstd
 
 ##############################################################
 

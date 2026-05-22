@@ -468,6 +468,7 @@ for p0loop in range(0,nshape):
         plt.plot(labels3,bendCFCavg.bspeed[p0loop][b0loop] )
         plt.bar(labels3,bendCFCavg.bspeed[p0loop][b0loop], yerr = error, capsize=3, width=bwidth,label = Bi[b0loop] )
 
+        plt.grid()
         plt.tick_params(axis='both', labelsize=28)
         plt.xticks([])
 

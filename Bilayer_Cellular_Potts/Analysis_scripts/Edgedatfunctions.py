@@ -2,6 +2,13 @@
 
 import numpy as ny
 import statistics
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import plotly.graph_objects as go
+from matplotlib.colors import TABLEAU_COLORS, same_color
+from matplotlib.pyplot import cm
+from matplotlib import cm
+
 
 ###################################################
 #Here we get the number of lines in the edgematch file
@@ -94,21 +101,22 @@ def getalldata(n, np0,nbi,nse, namep0,namebi,namesee,name):
 ############################################
 #We average over seeds
 
-def edgeavgoverseed(tdat,dat,n, np0,nbi):
+def edgeavgoverseed(EM,n, np0,nbi):
 
     
     PBavg = ny.zeros((n, np0, nbi))
-
+    PBstd = ny.zeros((n, np0, nbi))
+    time = ny.zeros((n,np0,nbi))
 
     for lines in ny.arange(0,n):
         for p0 in ny.arange(0,np0):
             for bi in ny.arange(0, nbi):
-                PBavg[lines,p0,bi] = ny.mean(dat[lines,p0,bi,:])
+                PBavg[lines,p0,bi] = ny.mean(EM.edgedat[lines,p0,bi,:])
+                PBstd[lines,p0,bi] = ny.std(EM.edgedat[lines,p0,bi,:])
+                time[lines,p0,bi] = EM.tsdat[lines,p0,bi,0]
 
 
-    time = tdat
-
-    return time,PBavg
+    return time,PBavg,PBstd
 
 
 
@@ -148,7 +156,8 @@ def getallneighdata(n,np0,nse,nbi,namep0,namesee,namebi,name):
 
     neichgsum = ny.zeros((n,np0,nbi))
 
-    neichgtot = ny.zeros((np0,nbi,nse))
+    neichgtotseed = ny.zeros((np0,nbi,nse))
+    neichgtot = ny.zeros((np0,nbi))
 
     neichgavg = ny.zeros((np0,nbi))
     neichgstd = ny.zeros((np0,nbi))
@@ -172,14 +181,14 @@ def getallneighdata(n,np0,nse,nbi,namep0,namesee,namebi,name):
                         neichg12[i1-1,p0,bi,se]=float(ndata[1])+float(ndata[2])
                         neichgsum[i1-1,p0,bi]+=(float(ndata[1])+float(ndata[2]))
 
-                neichgtot[p0,bi,se] = ny.sum(neichg12[:,p0,bi,se])
+                neichgtotseed[p0,bi,se] = ny.sum(neichg12[:,p0,bi,se])
+
+            neichgtot[p0,bi] = ny.sum(neichgtotseed[p0,bi,:])
+            neichgavg[p0,bi] = ny.mean(neichgtotseed[p0,bi,:])
+            neichgstd[p0,bi] = ny.std(neichgtotseed[p0,bi,:])
 
 
-            neichgavg[p0,bi] = ny.mean(neichgtot[p0,bi,:])
-            neichgstd[p0,bi] = ny.std(neichgtot[p0,bi,:])
-
-
-    return Time,neichg1, neichg2, neichg12, neichgtot,neichgsum,neichgavg, neichgstd
+    return Time,neichg1, neichg2, neichg12, neichgsum,neichgtotseed,neichgtot,neichgavg, neichgstd
 
 
 
@@ -815,5 +824,157 @@ def Avgoverendtime(EM, lenp0, lenbi, nseeds, nlstart, nlend):
 
 
 ########################################
+
+def plotneighchange(Nei,P,B,S,Nse,ytick,yrange,ytickneigh,selabel,floop):
+
+    cyticks1=ytick
+    cyrange=yrange
+    cyticksens=ytickneigh
+
+    cmap = plt.get_cmap('tab20',Nse)
+
+#    for seed in range(0,Nse):
+
+    plt.plot(Nei.time[:,P,B,S],Nei.neichg12[:,P,B,S], color = cmap(S), label = selabel[S])
+    plt.grid()
+    plt.tick_params(axis='both', labelsize = 28)
+
+    floop+=1
+    return floop
+
+
+##########################################
+
+def plotedgeandneighchange(EM,Nei,skip,P,B,Nse,ytick,yrange,ytickneigh,selabel,floop):
+
+    fig, (ax1, ax2 ) = plt.subplots(2,1, figsize=(6,6) )
+    cyticks1=ytick
+    cyrange=yrange
+    cyticksens=ytickneigh
+
+    cmap = plt.get_cmap('tab20',Nse)
+
+
+    for seed in range(0,Nse):
+
+        tsavgskp = EM.tsdat[::skip,P,B,seed]
+
+        PBseedskp = EM.edgedat[::skip,P,B,seed]
+        ax1.plot(tsavgskp,PBseedskp, color = cmap(seed), label = selabel[seed] )
+        ax1.grid()
+        ax1.tick_params(axis='both', labelsize = 28)
+        ax1.set_ylim(cyrange)
+
+        ax2.plot(Nei.time[:,P,B,seed],Nei.neichg12[:,P,B,seed], color = cmap(seed), label = selabel[seed])
+        ax2.grid()
+        ax2.tick_params(axis='both', labelsize = 28)
+
+    floop+=1
+    return floop
+
+########################################################
+
+def plotedgediffandnei(EM,Nei,skip,P,B,Nse,ytick,yrange,ytickneigh,selabel,floop):
+
+    cmap = plt.get_cmap('tab20',Nse)
+    fig, (ax1, ax2 ) = plt.subplots(2,1, figsize=(6,6) )
+    cyrange=yrange
+    cyticksens=ytick
+
+
+    for seed in range(0,Nse):
+
+        PBseedskp = EM.edgediff[::skip,P,B,seed]
+        ax1.plot(EM.tsdat[::skip,P,B,seed],PBseedskp, color = cmap(seed), label = selabel[seed] )
+        ax1.grid()
+        ax1.tick_params(axis='both', labelsize = 28)
+
+        ax2.plot(Nei.time[:,P,B,seed],Nei.neichg12[:,P,B,seed], color = cmap(seed), label = selabel[seed])
+        ax2.grid()
+        ax2.tick_params(axis='both', labelsize = 28)
+
+
+    floop +=1
+    return floop
+
+
+############################################################
+#Now we plot the ensemble avgs
+
+def plotensmblavg(EM,Nei,skip,P,Bran,ytick,yrange,ytickneigh,bilabel,floop):
+
+    cmap = plt.get_cmap('rainbow',Bran)
+    fig, (ax1, ax2 ) = plt.subplots(2,1, figsize=(6,6) )
+    cyrange=yrange
+    cyticksens=ytick
+
+    bihalf = Bran//2
+    for bi in range(0,bihalf):
+        bi2 = 2*bi
+
+        PBseedskp = EM.edge[::skip,P,bi2]
+        ax1.plot(EM.tsdat[::skip,P,bi2],PBseedskp, color = cmap(bi2), label = bilabel[bi2] )
+        ax1.grid()
+        ax1.tick_params(axis='both', labelsize = 28)
+        ax1.set_ylim(cyrange)
+
+        ax2.plot(Nei.time[:,P,bi2,0],Nei.neichgsum[:,P,bi2], color = cmap(bi2), label = bilabel[bi2])
+        ax2.grid()
+        ax2.tick_params(axis='both', labelsize = 28)
+        ax2.set_yticks(cyticksens)
+
+    floop +=1
+    return floop
+
+##################################################
+#We plot regimes maps
+
+def plotregimemap(Reg,Xv,Yv,bound,ytick,mapindx,floop):
+
+    cyticks1=ytick
+    if mapindx == 1:
+        cmap2 = 'rainbow'
+    elif mapindx == 2:
+        cmap2 = 'jet'
+    elif mapindx == 3:
+        cmap2 = 'plasma'
+    else:
+        cmap2 = 'terrain'
+
+    contour1 = plt.figure(floop)
+    contour = plt.contourf(Xv,Yv,Reg,levels=bound, cmap=cmap2)
+    cbar = plt.colorbar(contour, location='right')
+    cbar.ax.tick_params(labelsize=32)
+    plt.yticks(ytick)
+    plt.tick_params(axis='both',labelsize=26)
+    plt.grid()
+
+    floop+=1
+    return floop
+
+
+###################################################
+#We plot half the lines
+
+def plothalfthelines(Lin,xvals,Bran,bilabel,floop):
+
+    cmap = plt.get_cmap('rainbow',Bran)
+    bihalf = Bran//2
+    for bi in range(0,bihalf):
+        bi2 = 2*bi
+        plt.plot(xvals,Lin[:,bi],color=cmap(bi2), label=bilabel)
+        plt.grid()
+        plt.tick_params(axis='both', labelsize = 28)
+
+
+    plt.legend(loc='lower left', bbox_to_anchor=(0.99,-0.02),fontsize=20)
+
+    floop +=1
+    return floop
+
+###############################################################
+
+
+
 
 
