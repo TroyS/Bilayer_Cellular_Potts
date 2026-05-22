@@ -1996,7 +1996,7 @@ else
 {
 	if (b == 1)
 	{
-		xuse = Xsite; yuse = Ysite;
+		xnew = Xsite; ynew = Ysite;
 	}
 
 
@@ -2023,6 +2023,12 @@ void getcommindist( Point Po[], Grid G, Cellprop Cel[])
 int le = G.NP, nc = G.Nnum, i = 0, npoints[nc] = {0}, Cnum;
 
 double xcomtemp = 0, ycomtemp = 0, La = G.Lat, rad3 = sqrt(3), Asite = La*La*rad3/2, Acel;
+
+
+for (i=0; i<nc; i++)
+{
+	Cel[i].xcom = 0; Cel[i].ycom = 0;
+}
 
 
 for (i=0; i<le; i++)
@@ -3499,6 +3505,41 @@ double regionbimatchpointy(Point Po[], Nlist& nei,double reg1, double reg2)
 
 
 }
+
+/////////////////////////////////////////////////
+//This will include both endpoints
+double regionbimatchpointy2(Point Po[], Nlist& nei,double reg1, double reg2)
+{
+
+	int poit=0, nmatch = 0, npoints = nei.n, index;
+	double coord, matchavg = 0;
+
+	for (poit=0; poit<npoints; poit++)
+	{
+		index = nei.List[poit];
+		coord = Po[index].yhex;
+
+		if ( ( coord <= reg2) && ( coord >= reg1 ) ) 
+			{	
+				nmatch +=1;
+				matchavg += (double)Po[index].nedge/(double)Po[index].nperi;
+			}
+
+	}
+
+	if (nmatch != 0)
+		{matchavg = matchavg/((double)nmatch); }
+	else
+		{std::cout << "There were " << nmatch << " points in the region so we move," << std::endl;
+		matchavg = 1;}
+
+	return matchavg;
+
+
+}
+
+
+
 
 ////////////////////////////////////////////////////////////////
 double newregionbimatchpointy(Point Po[], Nlist& nei,double reg1, double reg2, double reg3, double reg4)
