@@ -423,12 +423,9 @@ figloop = msd.plotrdistseeds(distdata,p5p0,bi4p5,nseeds,figloop,"Ensemble averag
 
 #################################################
 
-figloop +=1
-
-#figloop = msd.plotdistseed(distdata,p5p0,bi4p5,nseeds,figloop,"X2 walking distance",snum, usex)
+figloop = msd.plotdistseed(distdata,p5p0,bi4p5,nseeds,figloop,"X2 walking distance",snum, usex)
 
 
-##Make sure to put back in
 
 #plt.figure(figloop)
 #plt.grid()
@@ -442,10 +439,8 @@ figloop +=1
 #figloop = figloop + 1
 
 
-
 ################################################
 
-figloop+=2
 
 custom_yticks=[0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5]
 
@@ -470,6 +465,7 @@ figloop = ed.plotregimemap(edgeinfo.edgedatavg,xvals,yvals,bounds,custom_yticks,
 #plt.show()
 
 ###########################################################
+
 
 figloop = ed.plothalfthelines(edgeinfo.edgedatstd,pvald,nbicouple,Birange,figloop)
 
