@@ -981,6 +981,81 @@ void neighpropset(Point poit[], Point poit2[], Cellprop CC[], Cellprop LL[], int
 
 }
 
+//////////////////////////////////////////////////
+//This will get site properties within a specific region
+
+void neighpropget(Point poit[], Point poit2[], Cellprop CC[], Cellprop LL[], int a, int& nper, int& nmatc)
+{
+
+	int j = 0;
+
+	int index;
+
+	int cn1 = poit[a].cnum;
+
+	int cn2 = poit2[a].cnum;
+       
+	int cn3, cn4;
+
+	
+
+//	int per = 0;
+
+//	poit[a].nedge = 0;
+//	poit2[a].nedge = 0;
+
+	int nc = 0;
+	int ncm = 0;
+
+	for (j = 0; j<6; j++)
+	{
+
+		index = poit[a].neiind[j];
+
+		cn3 = poit[index].cnum;
+
+		cn4 = poit2[index].cnum;
+
+
+		if (cn1 != cn3 )
+
+		{
+
+//			CC[cn1].Addneigh(cn3);
+
+			nc +=1;
+
+			if (cn2 != cn4) 
+				{
+					//poit[a].nedge += 1;
+					//poit2[a].nedge += 1;
+					ncm +=1;
+//					LL[cn2].Addneigh(cn4);
+				}		
+		
+		}
+
+	}
+
+
+//	if (nc > 0 ) { poit[a].Peri = 1; }
+
+//	if (nc == 0 ) { poit[a].Peri = 0; }
+
+	nper += nc;
+	nmatc += ncm;
+
+//	poit[a].nperi += nc;
+
+//	poit[a].zhex = poit[a].nedge*CC[cn1].kapp;
+
+//	poit2[a].zhex = poit2[a].nedge*LL[cn2].kapp;
+
+
+}
+
+
+
 
 //////////////////////////////////////
 //We get the coordinates of the point

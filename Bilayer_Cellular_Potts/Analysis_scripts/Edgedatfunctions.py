@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 from matplotlib.colors import TABLEAU_COLORS, same_color
 from matplotlib.pyplot import cm
 from matplotlib import cm
-
+import math
 
 ###################################################
 #Here we get the number of lines in the edgematch file
@@ -72,10 +72,15 @@ def getalldata(n, np0,nbi,nse, namep0,namebi,namesee,name):
 
     tsPB = ny.zeros((n,2))
 
+    Namu=[[[None for _ in range(nse)] for _ in range(nbi) ] for _ in range(np0)]
+
+
     for p0 in ny.arange(0,np0):
         for bi in ny.arange(0, nbi):
             for se in ny.arange(0, nse):
                 filenme = namep0[p0] + namesee[se] + "Bi_" + namebi[bi] + name
+
+                Namu[p0][bi][se] = filenme
 
                 with open(filenme, 'r') as dfile:
                     dlines = dfile.readlines()
@@ -95,7 +100,7 @@ def getalldata(n, np0,nbi,nse, namep0,namebi,namesee,name):
     Dif = ny.array(diff)
 
 
-    return ts, PB, Dif
+    return ts, PB, Dif, Namu
 
 
 ############################################
@@ -179,7 +184,7 @@ def getallneighdata(n,np0,nse,nbi,namep0,namesee,namebi,name):
                         neichg1[i1-1,p0,bi,se] = float(ndata[1])
                         neichg2[i1-1,p0,bi,se] = float(ndata[2])
                         neichg12[i1-1,p0,bi,se]=float(ndata[1])+float(ndata[2])
-                        neichgsum[i1-1,p0,bi]+=(float(ndata[1])+float(ndata[2]))
+                        neichgsum[i1-1,p0,bi]+=float(ndata[1])+float(ndata[2])
 
                 neichgtotseed[p0,bi,se] = ny.sum(neichg12[:,p0,bi,se])
 
@@ -712,13 +717,47 @@ def getallrisetime(EM,tstart,nline,np0,nbi,nse):
 
                 trise[p0,bi,se] = t2-t1
 
-            triseavg[p0,bi] = ny.mean(trise[p0,bi,:])
+            triseavg[p0,bi] = math.ceil(ny.mean(trise[p0,bi,:]))
 
             trisestd[p0,bi] = ny.std(trise[p0,bi,:])
+
 
     return trise,triseavg, trisestd
 
 #########################################
+#We get the number of neighbor changes at rise time
+def getallneiatrise(Nei,Tri,np0,nbi,nse):
+
+
+    Natrise = ny.zeros((np0,nbi,nse))
+
+    Natriseavg = ny.zeros((np0,nbi))
+    Natrisestd = ny.zeros((np0,nbi))
+
+    for p0 in range(0,np0):
+        for bi in range(0,nbi):
+            for se in range(0,nse):
+
+                rtime = int(math.ceil(Tri.edgerise[p0,bi,se]/10))
+                Natrise[p0,bi,se] = ny.sum(Nei.neichg12[:rtime,p0,bi,se])
+
+
+
+            Natriseavg[p0,bi] = ny.mean(Natrise[p0,bi,:])
+
+            Natrisestd[p0,bi] = ny.std(Natrise[p0,bi,:])
+
+    return Natrise,Natriseavg, Natrisestd
+
+
+
+
+
+
+
+
+############################################
+
 
 #We get the shape index and actual perimeter
 
@@ -927,7 +966,7 @@ def plotensmblavg(EM,Nei,skip,P,Bran,ytick,yrange,ytickneigh,bilabel,floop):
     return floop
 
 ##################################################
-#We plot regimes maps
+#We plot contour maps
 
 def plotregimemap(Reg,Xv,Yv,bound,ytick,mapindx,floop):
 
@@ -941,8 +980,17 @@ def plotregimemap(Reg,Xv,Yv,bound,ytick,mapindx,floop):
     else:
         cmap2 = 'terrain'
 
+
+    [X,Y] = ny.meshgrid(Xv,Yv)
+
+    regimefix = ny.zeros((len(Yv),len(Xv)))
+    for x in range(0,len(Xv)):
+        for y in range(0,len(Yv)):
+            regimefix[y,x] = Reg[x,y]
+
+    plt.figure(floop)
     contour1 = plt.figure(floop)
-    contour = plt.contourf(Xv,Yv,Reg,levels=bound, cmap=cmap2)
+    contour = plt.contourf(X,Y,regimefix,levels=bound, cmap=cmap2)
     cbar = plt.colorbar(contour, location='right')
     cbar.ax.tick_params(labelsize=32)
     plt.yticks(ytick)
@@ -952,17 +1000,17 @@ def plotregimemap(Reg,Xv,Yv,bound,ytick,mapindx,floop):
     floop+=1
     return floop
 
-
 ###################################################
 #We plot half the lines
 
 def plothalfthelines(Lin,xvals,Bran,bilabel,floop):
 
     cmap = plt.get_cmap('rainbow',Bran)
+    plt.figure(floop)
     bihalf = Bran//2
     for bi in range(0,bihalf):
         bi2 = 2*bi
-        plt.plot(xvals,Lin[:,bi],color=cmap(bi2), label=bilabel)
+        plt.plot(xvals,Lin[:,bi2],color=cmap(bi2), label=bilabel[bi2])
         plt.grid()
         plt.tick_params(axis='both', labelsize = 28)
 

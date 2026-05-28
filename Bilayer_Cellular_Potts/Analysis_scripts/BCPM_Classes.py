@@ -15,7 +15,7 @@ class Edgematchdat:
 
 
 class Edgedatavg:
-    def _init_(self, tdat, edat, edstd):
+    def _init_(self, tdat, edat, edstd, edatfi,edatfistd):
         self.tsdat = np.array(tdat)
         self.edge = np.array(edat)
         self.edgestd = np.array(edstd)
@@ -107,13 +107,20 @@ class Speeddata:
 
 
 class Propsatrise:
-    def _init_(self, ratrisseed,ratris, ratrisstd, satrisseed,satris,satrisstd):
+    def _init_(self, ratrisseed,ratris, ratrisstd, satrisseed,satris,satrisalt,satrisstd,neirseed,neir,neirstd, msrissee, msris, msrisstd):
         self.distatriseseed = ratrisseed
         self.distatrise = ratris
         self.distatrisestd = ratrisstd
         self.speedatriseseed = satrisseed
         self.speedatrise = satris
         self.speedatrisestd = satrisstd
+        self.speedatrisealt = satrisalt
+        self.neiatriseseed = neirseed
+        self.neiatrise = neir
+        self.neiatrisestd = neistd
+        self.msdatriseseed = msrissee
+        self.msdatrise = msris
+        self.msdatrisestd = msrisstd
 
 ##############################################################
 
