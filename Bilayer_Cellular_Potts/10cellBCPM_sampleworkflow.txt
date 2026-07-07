@@ -1,0 +1,22 @@
+Here is an example of initializing a 10 cell simulation and then collecting data:
+
+
+mkdir 10cellexamplerun
+
+cp BilayerCPinitupd.cpp 10cellexamplerun
+
+cp BilayerCPbisweepupd.cpp 10cellexamplerun
+
+cp 10cellinitexample.dat 10cellexamplerun
+
+cp 10cellsweepexample.dat 10cellexamplerun
+
+cd 10cellexamplerun
+
+g++ -o bilaycpset BilayerCPinitupd.cpp
+
+./bilaycpset 10cellinitexample.dat A1040example 0 500 10
+
+g++ -o bilaycpbisweep BilayerCPbisweepupd.cpp
+
+./bilaycpbisweep A1040exampleregion.dat 10cellsweepexample.dat p0_4_A1040example 
