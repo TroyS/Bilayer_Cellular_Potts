@@ -1,5 +1,5 @@
 
-The programs in this folder run different steps and versions of the bilayer coupling model. The initialization files (BilayerCPinitupd.cpp, BilayerCPmorecellsinit.cpp) take an input file as an argument and produce various .dat files including a region.dat that is used as an input for the data collection programs (BilayerCPbisweepupd.cpp, BilayerCPmorecellssweep.cpp, BilayerCPlargebendCFC.cpp). 
+The programs in this folder run different versions of the bilayer coupling model. The initialization files (BilayerCPinitupd.cpp, BilayerCPmorecellsinit.cpp) take an input file as an argument and produce various .dat files including a region.dat that is used as an input for the data collection programs (BilayerCPbisweepupd.cpp, BilayerCPmorecellssweep.cpp, BilayerCPlargebendregionII.cpp, BilayerCPlargebendCFC.cpp). 
 
 "BilayerCPinitupd.cpp" generates and initializes a cell configuration. It takes an input parameter file and an output file name as an argument and produces various .dat files as output. After compiling the program, it can be run with
 
@@ -13,7 +13,7 @@ Where 10cellinitexample.dat is the parameter file.
 
 For these two programs the shape indices of individual cells can be tuned.
 
-"BilayerCPmorecellssweep.cpp" generates and initializes a cell configuration for a large number of cells. It takes an input parameter file and an output file name as an argument and produces various .dat files as output. After compiling the program, it can be run with
+"BilayerCPmorecellsinit.cpp" generates and initializes a cell configuration for a large number of cells. It takes an input parameter file and an output file name as an argument and produces various .dat files as output. After compiling the program, it can be run with
 
 ./"program name" manycellinitexample.dat manyinitexample
 
@@ -23,10 +23,10 @@ Where manycellinitexample.dat is the parameter file.
 
 ./"program name" manyinitexampleregion.dat manysweepexample.dat manysweepexample
 
-"BilayerCPlargebendCFC.cpp" runs simulations for data collection with the crude bending model. When a region.dat file has been generated from a large cell run, it can be run with
+"BilayerCPlargebendregionII.cpp" runs simulations for data collection with the crude bending model. After a region.dat file has been generated from a large cell run, it can be run with
 
 ./"program name" manyinitexampleregion.dat bendexample.dat bendexample
 
-For these three programs the shape indices of all cells are equal.
+For these three programs the shape indices of all cells in a simulation are equal.
 
  
